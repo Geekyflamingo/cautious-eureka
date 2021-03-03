@@ -54,3 +54,45 @@ func TestUnmarshalUsers(t *testing.T) {
 		assertCorrectUsersStruct(t, users, want)
 	})
 }
+func TestToJsonUsers(t *testing.T) {
+
+	assertCorrectJSON := func(t testing.TB, got, want []byte) {
+		t.Helper()
+
+		if diff := deep.Equal(got, want); diff == nil {
+			t.Errorf("got %v want %v", string(got), want)
+		}
+	}
+
+	t.Run("User to json", func(t *testing.T) {
+		user := User{"214", "", "", "", "", "", "", "", "", "", false, "en", "email14@somewhere.com", "jwsMJNOk3oM3hVM5bGcF14", "1561650268514", []string{}}
+		got, _ := user.ToJSON()
+		want := []byte(`{
+			"id":"214",
+			"languageCode":"en",
+			"emailAddress":"email14@somewhere.com",
+			"registrationId":"jwsMJNOk3oM3hVM5bGcF14",
+			"registrationIdGeneratedTime":"1561650268514",
+			"projectIDs":[]
+			}`)
+		assertCorrectJSON(t, got, want)
+	})
+
+	t.Run("Users to json", func(t *testing.T) {
+		user := User{"214", "", "", "", "", "", "", "", "", "", false, "en", "email14@somewhere.com", "jwsMJNOk3oM3hVM5bGcF14", "1561650268514", []string{}}
+
+		users := Users{}
+		users.UserList = append(Users{}.UserList, user)
+
+		got, _ := users.ToJSON()
+		want := []byte(`[{
+			"id":"214",
+			"languageCode":"en",
+			"emailAddress":"email14@somewhere.com",
+			"registrationId":"jwsMJNOk3oM3hVM5bGcF14",
+			"registrationIdGeneratedTime":"1561650268514",
+			"projectIDs":[]
+			}]`)
+		assertCorrectJSON(t, got, want)
+	})
+}

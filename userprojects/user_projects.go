@@ -13,7 +13,7 @@ const registeredUsersEndpoint string = "https://5c3ce12c29429300143fe570.mockapi
 const unregisteredusersEndpoint string = "https://5c3ce12c29429300143fe570.mockapi.io/api/unregisteredusers"
 const projectsEndpoint string = "https://5c3ce12c29429300143fe570.mockapi.io/api/projectmemberships"
 
-//GetUserProjects blah
+//GetUserProjects processes a request and serves up the response
 func GetUserProjects(w http.ResponseWriter, r *http.Request) {
 	registeredUsers := user.Users{}
 	registeredUsersResp := getData(registeredUsersEndpoint)
