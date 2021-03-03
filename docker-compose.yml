@@ -1,0 +1,14 @@
+version: "3"
+services:
+  test:
+    build: 
+      context: .
+      dockerfile: ./docker/test/Dockerfile
+  user-projects-image:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - '7777:7777'
+    volumes:
+      - ./:/app
