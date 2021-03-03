@@ -13,5 +13,4 @@ func main() {
 	r.HandleFunc("/users", userprojects.GetUserProjects).Methods("GET")
 	fmt.Println("Server listening! Woohoo!")
 	http.ListenAndServe(":7777", r)
-
 }

@@ -1,12 +1,11 @@
 package userprojects
 
 import (
+	"datasite/errs"
 	"datasite/project"
 	"datasite/user"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -16,35 +15,46 @@ const projectsEndpoint string = "https://5c3ce12c29429300143fe570.mockapi.io/api
 
 //GetUserProjects blah
 func GetUserProjects(w http.ResponseWriter, r *http.Request) {
-	users := append(user.UnmarshalUsers(getData(registeredUsersEndpoint)),
-		user.UnmarshalUsers(getData(unregisteredusersEndpoint))...)
+	registeredUsers := user.Users{}
+	registeredUsersResp := getData(registeredUsersEndpoint)
+	registeredUsers.UnmarshalUsers(registeredUsersResp)
 
-	projects := project.UnmarshalProjects(getData(projectsEndpoint))
+	unregisteredUsers := user.Users{}
+	unregisteredUsersResp := getData(unregisteredusersEndpoint)
+	unregisteredUsers.UnmarshalUsers(unregisteredUsersResp)
 
-	for i, user := range users {
+	users := user.Users{}
+	users.UserList = append(registeredUsers.UserList, unregisteredUsers.UserList...)
+
+	var projects []project.Project = project.UnmarshalProjects(getData(projectsEndpoint))
+	usersprojects := processUserProjects(users, projects)
+
+	w.WriteHeader(http.StatusOK)
+	resp, err := usersprojects.ToJSON()
+	errs.HandleError(err)
+	fmt.Fprintf(w, string(resp))
+}
+
+func processUserProjects(users user.Users, projects []project.Project) user.Users {
+	for i, user := range users.UserList {
 		for _, project := range projects {
 			if user.ID == project.UserID {
-				(&users[i]).ProjectIDs = append(user.ProjectIDs, project.ID)
+				(&users).UserList[i].ProjectIDs = append(user.ProjectIDs, project.ID)
 			}
 		}
-		if (&users[i]).ProjectIDs == nil {
-			(&users[i]).ProjectIDs = []string{}
+		if (&users).UserList[i].ProjectIDs == nil {
+			(&users).UserList[i].ProjectIDs = []string{}
 		}
 	}
-	w.WriteHeader(http.StatusOK)
-	resp, _ := json.MarshalIndent(users, "", "  ")
-	fmt.Fprintf(w, string(resp))
+	return users
 }
 
 func getData(endpoint string) []byte {
 	resp, err := http.Get(endpoint)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	//We Read the response body on the line below.
+	errs.HandleError(err)
+
 	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	errs.HandleError(err)
+
 	return body
 }

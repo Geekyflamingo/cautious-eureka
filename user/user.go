@@ -1,8 +1,8 @@
 package user
 
 import (
+	"datasite/errs"
 	"encoding/json"
-	"log"
 )
 
 //User declares type for json destructuring
@@ -25,14 +25,23 @@ type User struct {
 	ProjectIDs                  []string `json:"projectIds"`
 }
 
-//UnmarshalUsers process user data points
-func UnmarshalUsers(resp []byte) []User {
-	//Convert the body to User type
-	var users []User
+//ToJSON returns formatted json string of User struct
+func (user *User) ToJSON() ([]byte, error) {
+	return json.MarshalIndent(user, "", "  ")
+}
 
-	err := json.Unmarshal(resp, &users)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return users
+//Users collection
+type Users struct {
+	UserList []User
+}
+
+//ToJSON returns formatted json string of User struct
+func (users *Users) ToJSON() ([]byte, error) {
+	return json.MarshalIndent(users.UserList, "", "  ")
+}
+
+//UnmarshalUsers process user data points
+func (users *Users) UnmarshalUsers(resp []byte) {
+	err := json.Unmarshal(resp, &users.UserList)
+	errs.HandleError(err)
 }

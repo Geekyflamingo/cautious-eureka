@@ -9,10 +9,8 @@ func TestUnmarshalProjects(t *testing.T) {
 		{"id":"38","projectId":"38","userId":"215"}]
 	`)
 
-	proj := []Project{}
-
 	got := UnmarshalProjects(data)
-	want := append(proj, Project{"37", "37", "214"}, Project{"38", "38", "215"})
+	want := []Project{{"37", "37", "214"}, {"38", "38", "215"}}
 
 	match := false
 	for _, gp := range got {

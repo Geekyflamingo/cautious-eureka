@@ -1,8 +1,8 @@
 package project
 
 import (
+	"datasite/errs"
 	"encoding/json"
-	"log"
 )
 
 //Project declares type for json destructuring
@@ -16,10 +16,7 @@ type Project struct {
 func UnmarshalProjects(resp []byte) []Project {
 	//Convert the body to Project type
 	var projects []Project
-
 	err := json.Unmarshal(resp, &projects)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	errs.HandleError(err)
 	return projects
 }

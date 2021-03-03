@@ -1,6 +1,10 @@
 package user
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/go-test/deep"
+)
 
 var unregdata = []byte(`[{"id":"214","emailAddress":"email14@somewhere.com","languageCode":"en","registrationId":"jwsMJNOk3oM3hVM5bGcF14","registrationIdGeneratedTime":"1561650268514"},{"id":"215","emailAddress":"email15@somewhere.com","languageCode":"en","registrationId":"jwsMJNOk3oM3hVM5bGcF15","registrationIdGeneratedTime":"1561650268515"}]`)
 
@@ -8,25 +12,13 @@ var regdata = []byte(`[{"id":"1","city":"Jaydashire","company":"Goyette - Renner
 
 func TestUnmarshalUsers(t *testing.T) {
 
-	assertCorrectUsersStruct := func(t testing.TB, got, want []User) {
+	assertCorrectUsersStruct := func(t testing.TB, got, want Users) {
+		deep.NilSlicesAreEmpty = true
 		t.Helper()
 		match := false
-		for _, gu := range got {
-			for _, wu := range want {
-				if gu.ID == wu.ID &&
-					gu.City == wu.City &&
-					gu.Company == wu.Company &&
-					gu.Country == wu.Country &&
-					gu.FirstName == wu.FirstName &&
-					gu.OrganizationType == wu.OrganizationType &&
-					gu.Phone == wu.Phone &&
-					gu.State == wu.State &&
-					gu.ZipCode == wu.ZipCode &&
-					gu.DisclaimerAccepted == wu.DisclaimerAccepted &&
-					gu.LanguageCode == wu.LanguageCode &&
-					gu.Email == wu.Email &&
-					gu.RegistrationID == wu.RegistrationID &&
-					gu.RegistrationIDGeneratedTime == wu.RegistrationIDGeneratedTime {
+		for _, gu := range got.UserList {
+			for _, wu := range want.UserList {
+				if diff := deep.Equal(wu, gu); diff == nil {
 					match = true
 				}
 			}
@@ -38,23 +30,27 @@ func TestUnmarshalUsers(t *testing.T) {
 	}
 
 	t.Run("Registered Users", func(t *testing.T) {
+		user1 := User{"1", "Jaydashire", "Goyette - Renner", "South Africa", "firstName 1", "lastName 1", "organizationType 1", "524.276.1570 x487", "SD", "68048", false, "en", "last1@mail.com", "", "", []string{}}
+		user2 := User{"2", "Adolfofort", "Fisher - Bartoletti", "China", "firstName 2", "lastName 2", "organizationType 2", "(308) 197-9774 x339", "CO", "78569", false, "en", "last2@mail.com", "", "", []string{}}
+		users := Users{}
+		want := Users{}
 
-		users := []User{}
+		users.UnmarshalUsers(regdata)
+		want.UserList = append(Users{}.UserList, user1, user2)
 
-		got := UnmarshalUsers(regdata)
-		want := append(users, User{"1", "Jaydashire", "Goyette - Renner", "South Africa", "firstName 1", "lastName 1", "organizationType 1", "524.276.1570 x487", "SD", "68048", false, "en", "last1@mail.com", "", "", []string{}}, User{"2", "Adolfofort", "Fisher - Bartoletti", "China", "firstName 2", "lastName 2", "organizationType 2", "(308) 197-9774 x339", "CO", "78569", false, "en", "last2@mail.com", "", "", []string{}})
-
-		assertCorrectUsersStruct(t, got, want)
+		assertCorrectUsersStruct(t, users, want)
 
 	})
 
 	t.Run("Unregistered Users", func(t *testing.T) {
+		user1 := User{"214", "", "", "", "", "", "", "", "", "", false, "en", "email14@somewhere.com", "jwsMJNOk3oM3hVM5bGcF14", "1561650268514", []string{}}
+		user2 := User{"215", "", "", "", "", "", "", "", "", "", false, "en", "email15@somewhere.com", "jwsMJNOk3oM3hVM5bGcF15", "1561650268515", []string{}}
+		users := Users{}
+		want := Users{}
 
-		users := []User{}
+		users.UnmarshalUsers(unregdata)
+		want.UserList = append(Users{}.UserList, user1, user2)
 
-		got := UnmarshalUsers(unregdata)
-		want := append(users, User{"214", "", "", "", "", "", "", "", "", "", false, "en", "email14@somewhere.com", "jwsMJNOk3oM3hVM5bGcF14", "1561650268514", []string{}}, User{"215", "", "", "", "", "", "", "", "", "", false, "en", "email15@somewhere.com", "jwsMJNOk3oM3hVM5bGcF15", "1561650268515", []string{}})
-
-		assertCorrectUsersStruct(t, got, want)
+		assertCorrectUsersStruct(t, users, want)
 	})
 }
